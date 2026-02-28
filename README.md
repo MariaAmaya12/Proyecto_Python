@@ -50,7 +50,6 @@ Todos los resultados numéricos se redondean a 4 decimales.
 
 ## 🧱 Arquitectura del Proyecto
 
-
 mi_proyecto/
 ├── api/
 │   ├── main.py
@@ -62,6 +61,8 @@ mi_proyecto/
 │   ├── pipeline.py
 │   └── schemas.py
 └── requirements.txt
+
+---
 
 ### Separación de responsabilidades
 
