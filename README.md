@@ -48,9 +48,9 @@ Todos los resultados numéricos se redondean a 4 decimales.
 
 ---
 
-## 🧱Arquitectura del Proyecto
->>>>>>> 1b5a61df7c75764fd586e02c960016e0d0e7439a
+## 🧱 Arquitectura del Proyecto
 
+```text
 mi_proyecto/
 ├── api/
 │   ├── main.py
@@ -62,6 +62,7 @@ mi_proyecto/
 │   ├── pipeline.py
 │   └── schemas.py
 └── requirements.txt
+```
 
 ---
 
@@ -96,14 +97,14 @@ Esta separación garantiza buena práctica de diseño y modularidad.
 
 ## 🌐 Endpoints Disponibles
 
-| Método  | Ruta                  | Descripción |
-|----------|-----------------------|-------------|
-| POST     | /analizar             | Analiza un conjunto de inmuebles |
-| GET      | /historial            | Lista todos los análisis |
-| GET      | /historial/{id}       | Obtiene un análisis específico |
-| DELETE   | /historial/{id}       | Elimina un análisis |
-| POST     | /limpiar              | Aplica módulo de limpieza |
-| GET      | /health               | Verifica estado del servidor |
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | /analizar | Analiza un conjunto de inmuebles |
+| GET | /historial | Lista todos los análisis |
+| GET | /historial/{id} | Obtiene un análisis específico |
+| DELETE | /historial/{id} | Elimina un análisis |
+| POST | /limpiar | Aplica módulo de limpieza |
+| GET | /health | Verifica estado del servidor |
 
 ---
 
@@ -126,7 +127,7 @@ Si los datos violan estas reglas, la API retorna un error 422.
 ## 🧠 Manejo de Errores
 
 - 422 → Error de validación Pydantic
-- 404 → Recurso no encontrado (historial/{id})
+- 404 → Recurso no encontrado
 - 200 → Operación exitosa
 
 ---
@@ -137,3 +138,4 @@ Activar entorno virtual (si aplica) y ejecutar:
 
 ```bash
 uvicorn api.main:app --reload
+```
