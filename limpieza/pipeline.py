@@ -1,10 +1,10 @@
 ## Contiene todas las funciones de limpieza y el pipeline principal.
 
 
-from __future__ import annotations
+from __future__ import annotations ## 
 
 import unicodedata ## limpieza de texto (acentos)
-from typing import Iterable, Optional ## 
+from typing import Iterable, Optional 
 
 import numpy as np
 import pandas as pd

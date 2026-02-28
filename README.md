@@ -1,237 +1,141 @@
-# Proyecto API IA – Fase 1  
-## Limpieza y Exposición de Datos Inmobiliarios (Bogotá)
+# API Inmobiliaria — Limpieza y Análisis Estadístico
 
-Este proyecto implementa una API REST para la limpieza estructurada de datos inmobiliarios utilizando:
-
-- **Pandas** (procesamiento y transformación de datos)
-- **Programación Orientada a Objetos (POO)** – clase `DataCleaner`
-- **Pydantic** (validación de esquemas de entrada y salida)
-- **FastAPI** (exposición de servicio REST)
-- **Uvicorn** (servidor ASGI)
+Proyecto Personal — Actividad Aplicada (Semanas 1–3)  
+Tecnologías: FastAPI · Pydantic · NumPy · Pandas · Uvicorn
 
 ---
 
-# 1. Objetivo del Proyecto
+## 📌 Descripción del Proyecto
 
-Desarrollar un módulo reutilizable de limpieza de datos y exponerlo como una API validada y documentada automáticamente.
+Esta API REST permite analizar estadísticamente conjuntos de inmuebles (casas, apartamentos, etc.) a partir de variables numéricas como área y valor.
 
-El proyecto corresponde a la **Fase 1 (Semanas 1–4)** del curso, donde se integran:
+El sistema:
 
-- Limpieza básica en Pandas  
-- Modularización en funciones  
-- Encapsulación mediante clases  
-- Validación estructurada con Pydantic  
-- Implementación de una API con FastAPI  
+1. Recibe datos en formato JSON.
+2. Valida la estructura y restricciones usando Pydantic.
+3. Opcionalmente aplica un módulo de limpieza basado en Programación Orientada a Objetos.
+4. Calcula métricas estadísticas usando NumPy.
+5. Retorna resultados estructurados en formato JSON.
+6. Permite almacenar, consultar y eliminar análisis realizados (CRUD en memoria).
 
----
-
-# 2. Dataset Utilizado
-
-## Inmuebles Bogotá
-
-El conjunto de datos contiene información sobre inmuebles en Bogotá, Colombia.
-
-### Variables incluidas:
-
-- **Tipo**: tipo de propiedad (apartamento, casa, oficina, local, lote, bodega, etc.)
-- **Descripción**: descripción textual del inmueble
-- **Habitaciones**: número de habitaciones
-- **Baños**: número de baños
-- **Área**: área en metros cuadrados
-- **Barrio**: barrio donde se ubica el inmueble
-- **UPZ**: Unidad de Planeamiento Zonal
-- **Valor**: precio en pesos colombianos
-
-Archivo principal utilizado:
-
-```
-inmuebles_bogota.csv
-```
+Este proyecto integra los conceptos vistos en las semanas 1, 2 y 3 del módulo.
 
 ---
 
-# 3. Estructura del Proyecto
+## 🏘 Dominio del Proyecto
 
-```
-proyecto_api_ia/
+Dominio: Mercado inmobiliario (Bogotá).
+
+Variables principales analizadas:
+
+- Área del inmueble (m²)
+- Valor del inmueble
+- Número de habitaciones
+- Número de baños
+- Tipo de inmueble
+- Barrio (opcional)
+
+Métricas calculadas:
+
+- Media
+- Mediana
+- Mínimo
+- Máximo
+- Desviación estándar muestral (ddof=1)
+- Precio por metro cuadrado (valor / área)
+
+Todos los resultados numéricos se redondean a 4 decimales.
+
+---
+
+## 🧱 Arquitectura del Proyecto
+
+
+mi_proyecto/
 │
 ├── api/
-│   └── main.py
+│ ├── main.py
+│ ├── analysis_schemas.py
+│
+├── analysis/
+│ ├── stats.py
 │
 ├── limpieza/
-│   ├── __init__.py
-│   ├── pipeline.py
-│   ├── cleaner.py
-│   └── schemas.py
+│ ├── cleaner.py
+│ ├── pipeline.py
+│ ├── schemas.py
 │
-├── eda/
-│   ├── analisis.ipynb
-│   └── eda.py
-│
-├── scripts/
-│   ├── ejecutar_pipeline.py
-│   ├── ejecutar_pipeline_semana1.py
-│   └── limpieza_semana1.py
-│
-├── inmuebles_bogota.csv
-├── data_limpia.csv
-├── requirements.txt
-└── README.md
-```
+└── requirements.txt
+
+### Separación de responsabilidades
+
+- `limpieza/`  
+  Módulo independiente de procesamiento tabular basado en POO.
+
+- `analysis/stats.py`  
+  Función pura que realiza cálculos estadísticos con NumPy.  
+  No depende de FastAPI.
+
+- `api/main.py`  
+  Capa HTTP: routing, validación, manejo de errores y respuestas JSON.
+
+Esta separación garantiza buena práctica de diseño y modularidad.
 
 ---
 
-# 4. Descripción de Carpetas
+## 🔄 Flujo Completo de un Request (POST /analizar)
 
-## 📁 api/
-Contiene la aplicación FastAPI.
-
-- Define los endpoints:
-  - `POST /limpiar`
-  - `GET /health`
-- Integra los esquemas Pydantic.
-- Expone documentación automática en `/docs`.
-
----
-
-## 📁 limpieza/
-Módulo reutilizable de limpieza de datos.
-
-### pipeline.py
-Funciones puras de transformación:
-- Estandarización de nombres de columnas
-- Conversión de vacíos a NaN
-- Eliminación de duplicados
-- Limpieza de columnas monetarias
-- Conversión numérica segura
-- Imputación de valores faltantes
-
-### cleaner.py
-Clase `DataCleaner`:
-- Encapsula el pipeline de limpieza
-- Recibe configuración validada
-- Genera reporte estructurado
-
-### schemas.py
-Modelos Pydantic:
-- `LimpiezaConfigSchema`
-- `LimpiezaReporteSchema`
+1. El cliente envía un JSON al endpoint `/analizar`.
+2. El decorador `@app.post` enruta la solicitud.
+3. Pydantic valida y convierte los datos al modelo `AnalisisInmobiliarioInput`.
+4. (Opcional) Se ejecuta el módulo de limpieza.
+5. Se llama a la función pura `analizar_inmuebles()` usando NumPy.
+6. Se construye el modelo `AnalisisInmobiliarioResult`.
+7. El resultado se guarda en memoria.
+8. FastAPI retorna una respuesta JSON con status 200.
 
 ---
 
-## 📁 eda/
-Exploración inicial del dataset:
-- Análisis descriptivo
-- Validación preliminar
-- Exploración de variables
+## 🌐 Endpoints Disponibles
+
+| Método  | Ruta                  | Descripción |
+|----------|-----------------------|-------------|
+| POST     | /analizar             | Analiza un conjunto de inmuebles |
+| GET      | /historial            | Lista todos los análisis |
+| GET      | /historial/{id}       | Obtiene un análisis específico |
+| DELETE   | /historial/{id}       | Elimina un análisis |
+| POST     | /limpiar              | Aplica módulo de limpieza |
+| GET      | /health               | Verifica estado del servidor |
 
 ---
 
-## 📁 scripts/
-Archivos auxiliares utilizados durante el desarrollo inicial del proyecto.
+## 🧮 Validaciones Implementadas
+
+Se utilizan validaciones con Pydantic:
+
+- `area_m2 > 0`
+- `valor > 0`
+- `habitaciones` entre 0 y 20
+- `banos` entre 0 y 20
+- `tipo` con longitud mínima
+- Campo `barrio` opcional
+- `extra="forbid"` para evitar campos inesperados
+
+Si los datos violan estas reglas, la API retorna un error 422.
 
 ---
 
-# 5. Flujo del Pipeline de Limpieza
+## 🧠 Manejo de Errores
 
-1. Copia segura del DataFrame
-2. Normalización de nombres de columnas
-3. Conversión de valores vacíos a NaN
-4. Eliminación de registros duplicados
-5. Limpieza de columnas monetarias
-6. Conversión numérica controlada
-7. Imputación de valores faltantes
-8. Generación de reporte estructurado
+- 422 → Error de validación Pydantic
+- 404 → Recurso no encontrado (historial/{id})
+- 200 → Operación exitosa
 
 ---
 
-# 6. Instalación
+## ⚙️ Ejecución del Proyecto
 
-Clonar el repositorio:
+Activar entorno virtual (si aplica) y ejecutar:
 
 ```bash
-git clone <URL_DEL_REPO>
-cd proyecto_api_ia
-```
-
-Crear entorno virtual:
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-Instalar dependencias:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# 7. Ejecución de la API
-
-```bash
-python -m uvicorn api.main:app --reload
-```
-
-Documentación interactiva disponible en:
-
-```
-http://127.0.0.1:8000/docs
-```
-
----
-
-# 8. Endpoints Disponibles
-
-## GET /health
-Verifica que la API esté activa.
-
-Respuesta:
-
-```json
-{"status": "ok"}
-```
-
----
-
-## POST /limpiar
-
-Recibe:
-
-- `config`: parámetros de limpieza
-- `data`: lista de registros JSON
-
-Valida automáticamente con Pydantic.
-
-Devuelve:
-
-- Número de filas de entrada
-- Número de filas de salida
-- Columnas finales
-- Vista previa del dataset limpio
-
-Si la configuración es inválida (por ejemplo, `umbral_conversion > 1`), devuelve:
-
-```
-HTTP 422 – Unprocessable Entity
-```
-
----
-
-# 9. Estado del Proyecto
-
-✔ Fase 1 completada  
-✔ Modularización implementada  
-✔ Encapsulación con POO  
-✔ Validación estructurada con Pydantic  
-✔ API REST funcional  
-✔ Documentación automática con Swagger  
-
----
-
-# 10. Autor
-
-Proyecto académico – Curso Python para APIs e IA  
-Universidad – 2026
+uvicorn api.main:app --reload
