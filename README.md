@@ -52,19 +52,15 @@ Todos los resultados numéricos se redondean a 4 decimales.
 
 
 mi_proyecto/
-│
 ├── api/
-│ ├── main.py
-│ ├── analysis_schemas.py
-│
-├── analysis/
-│ ├── stats.py
-│
+│   ├── main.py
+│   ├── analysis_schemas.py
+│   └── analysis/
+│       └── stats.py
 ├── limpieza/
-│ ├── cleaner.py
-│ ├── pipeline.py
-│ ├── schemas.py
-│
+│   ├── cleaner.py
+│   ├── pipeline.py
+│   └── schemas.py
 └── requirements.txt
 
 ### Separación de responsabilidades
