@@ -48,7 +48,8 @@ Todos los resultados numéricos se redondean a 4 decimales.
 
 ---
 
-## 🧱 Arquitectura del Proyecto
+## 🧱Arquitectura del Proyecto
+>>>>>>> 1b5a61df7c75764fd586e02c960016e0d0e7439a
 
 mi_proyecto/
 ├── api/
