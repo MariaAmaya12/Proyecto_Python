@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Inmobiliaria — Presentación Interactiva</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121933;
+      --panel-2:#182243;
+      --soft:#22305f;
+      --accent:#6ea8fe;
+      --accent-2:#7ef0c2;
+      --text:#eaf1ff;
+      --muted:#b8c4e3;
+      --danger:#ff7b7b;
+      --warning:#ffd36e;
+      --ok:#7ef0c2;
+      --shadow:0 12px 35px rgba(0,0,0,.28);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(110,168,254,.18), transparent 25%),
+        radial-gradient(circle at top right, rgba(126,240,194,.10), transparent 20%),
+        linear-gradient(180deg, #08101f 0%, #0d1328 100%);
+      color:var(--text);
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      min-height:100vh;
+    }
+
+    aside{
+      position:sticky;
+      top:0;
+      height:100vh;
+      padding:24px 18px;
+      border-right:1px solid rgba(255,255,255,.08);
+      background:rgba(9,14,30,.88);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand{
+      padding:18px;
+      border-radius:20px;
+      background:linear-gradient(135deg, rgba(110,168,254,.16), rgba(126,240,194,.10));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      margin-bottom:22px;
+    }
+
+    .brand h1{
+      font-size:1.25rem;
+      margin:0 0 8px 0;
+      line-height:1.2;
+    }
+
+    .brand p{
+      margin:0;
+      color:var(--muted);
+      font-size:.95rem;
+      line-height:1.5;
+    }
+
+    .nav-title{
+      font-size:.82rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#8fa3d6;
+      margin:20px 10px 10px;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .nav a{
+      color:var(--text);
+      text-decoration:none;
+      padding:12px 14px;
+      border-radius:14px;
+      background:transparent;
+      transition:.2s ease;
+      border:1px solid transparent;
+      font-size:.96rem;
+    }
+
+    .nav a:hover{
+      background:rgba(255,255,255,.05);
+      border-color:rgba(255,255,255,.08);
+      transform:translateX(3px);
+    }
+
+    .nav small{
+      display:block;
+      color:var(--muted);
+      margin-top:4px;
+      font-size:.82rem;
+    }
+
+    main{
+      padding:34px 38px 90px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:28px;
+      padding:34px;
+      background:
+        linear-gradient(135deg, rgba(110,168,254,.18), rgba(126,240,194,.12)),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      margin-bottom:28px;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:auto -60px -60px auto;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(126,240,194,.18), transparent 70%);
+      pointer-events:none;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:.9rem;
+      margin-bottom:14px;
+    }
+
+    .hero h2{
+      margin:0 0 12px;
+      font-size:2.1rem;
+      line-height:1.15;
+    }
+
+    .hero p{
+      margin:0 0 18px;
+      color:var(--muted);
+      max-width:920px;
+      font-size:1.02rem;
+      line-height:1.6;
+    }
+
+    .stack{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .pill{
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      font-size:.92rem;
+    }
+
+    section{
+      margin-top:26px;
+      scroll-margin-top:24px;
+    }
+
+    .section-card{
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      padding:26px;
+      box-shadow:var(--shadow);
+    }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:20px;
+      margin-bottom:18px;
+    }
+
+    .section-head h3{
+      margin:0 0 8px;
+      font-size:1.5rem;
+    }
+
+    .section-head p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+      max-width:900px;
+    }
+
+    .grid{
+      display:grid;
+      gap:18px;
+    }
+
+    .grid-3{
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-2{
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      padding:20px;
+    }
+
+    .card h4{
+      margin:0 0 10px;
+      font-size:1.08rem;
+    }
+
+    .card p, .card li{
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .flow{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:14px;
+      margin-top:8px;
+    }
+
+    .flow-step{
+      position:relative;
+      padding:18px;
+      border-radius:18px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.08);
+      min-height:140px;
+    }
+
+    .flow-step .num{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg, var(--accent), #8a7dff);
+      color:#07101f;
+      font-weight:700;
+      margin-bottom:12px;
+    }
+
+    .flow-step strong{
+      display:block;
+      margin-bottom:8px;
+      font-size:1rem;
+    }
+
+    .flow-step span{
+      color:var(--muted);
+      font-size:.95rem;
+      line-height:1.45;
+    }
+
+    .endpoint-list{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .endpoint-card{
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      overflow:hidden;
+    }
+
+    .endpoint-header{
+      padding:18px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .method{
+      font-weight:800;
+      font-size:.86rem;
+      border-radius:999px;
+      padding:7px 10px;
+      letter-spacing:.04em;
+      color:#09111f;
+    }
+
+    .post{ background:var(--ok); }
+    .get{ background:var(--accent); }
+    .delete{ background:var(--danger); }
+
+    .endpoint-path{
+      font-family: Consolas, monospace;
+      font-size:1rem;
+    }
+
+    .endpoint-body{
+      padding:18px 20px 22px;
+    }
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .tab-btn{
+      border:none;
+      cursor:pointer;
+      padding:10px 12px;
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.07);
+      transition:.2s ease;
+      font-size:.92rem;
+    }
+
+    .tab-btn.active{
+      background:linear-gradient(135deg, rgba(110,168,254,.28), rgba(126,240,194,.18));
+      border-color:rgba(110,168,254,.35);
+    }
+
+    .tab-panel{
+      display:none;
+    }
+
+    .tab-panel.active{
+      display:block;
+      animation:fade .28s ease;
+    }
+
+    @keyframes fade{
+      from{opacity:.35; transform:translateY(5px)}
+      to{opacity:1; transform:none}
+    }
+
+    pre{
+      margin:0;
+      padding:18px;
+      border-radius:16px;
+      overflow:auto;
+      background:#0a1122;
+      border:1px solid rgba(255,255,255,.07);
+      color:#dfe8ff;
+      line-height:1.5;
+      font-size:.92rem;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .info{
+      padding:14px 16px;
+      border-radius:14px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.07);
+      color:var(--muted);
+      line-height:1.6;
+    }
+
+    .img-wrap{
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0a1122;
+      margin-top:10px;
+    }
+
+    .img-wrap img{
+      width:100%;
+      display:block;
+    }
+
+    .kpi{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-top:6px;
+    }
+
+    .kpi .box{
+      padding:18px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+    }
+
+    .kpi .n{
+      font-size:1.4rem;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .kpi .t{
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.45;
+    }
+
+    .footer-note{
+      margin-top:18px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .mini{
+      color:#9db0df;
+      font-size:.9rem;
+      line-height:1.55;
+    }
+
+    .subtle{
+      color:var(--muted);
+      line-height:1.65;
+    }
+
+    @media (max-width: 1200px){
+      .flow{ grid-template-columns:repeat(2,1fr); }
+      .grid-3, .grid-2, .endpoint-list, .kpi{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width: 920px){
+      .layout{ grid-template-columns:1fr; }
+      aside{
+        position:relative;
+        height:auto;
+        border-right:none;
+        border-bottom:1px solid rgba(255,255,255,.08);
+      }
+      main{ padding:22px; }
+      .hero h2{ font-size:1.7rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <h1>API Inmobiliaria</h1>
+        <p>Presentación interactiva del proyecto con FastAPI, Pydantic, NumPy y Python.</p>
+      </div>
+
+      <div class="nav-title">Navegación</div>
+      <nav class="nav">
+        <a href="#inicio">Introducción<small>Qué hace la API</small></a>
+        <a href="#flujo">Flujo del sistema<small>Cómo viaja el request</small></a>
+        <a href="#arquitectura">Estructura del proyecto<small>Orden de explicación</small></a>
+        <a href="#validacion">Validación<small>Pydantic y control de datos</small></a>
+        <a href="#endpoints">Endpoints<small>POST, GET y DELETE</small></a>
+        <a href="#pruebas">Pruebas reales<small>Swagger y evidencias</small></a>
+        <a href="#cierre">Cierre<small>Conclusiones del proyecto</small></a>
+      </nav>
+    </aside>
+
+    <main>
+      <section id="inicio" class="hero">
+        <div class="badge">Proyecto académico · FastAPI · Dominio inmobiliario</div>
+        <h2>Cómo funciona la API Inmobiliaria</h2>
+        <p>
+          Esta API recibe datos de inmuebles en formato JSON, valida la entrada con <strong>Pydantic</strong>,
+          aplica limpieza opcional con un módulo propio, calcula estadísticas con <strong>NumPy</strong> y
+          guarda los resultados en memoria para consultarlos con endpoints CRUD.
+        </p>
+        <div class="stack">
+          <div class="pill">Dominio: mercado inmobiliario</div>
+          <div class="pill">Validación: Pydantic</div>
+          <div class="pill">Cálculo: NumPy</div>
+          <div class="pill">API: FastAPI</div>
+          <div class="pill">Servidor: Uvicorn</div>
+        </div>
+      </section>
+
+      <section id="flujo" class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Flujo completo del request</h3>
+            <p>
+              Esta es la secuencia principal del endpoint <code>POST /analizar</code>. La idea es mostrar no solo
+              el código, sino el recorrido lógico de los datos dentro del sistema.
+            </p>
+          </div>
+        </div>
+
+        <div class="flow">
+          <div class="flow-step">
+            <div class="num">1</div>
+            <strong>Cliente envía JSON</strong>
+            <span>El usuario envía un conjunto de inmuebles con nombre del análisis, moneda y opción de limpieza.</span>
+          </div>
+          <div class="flow-step">
+            <div class="num">2</div>
+            <strong>FastAPI recibe el request</strong>
+            <span>El endpoint <code>/analizar</code> recibe el cuerpo de la solicitud y lo pasa al modelo principal.</span>
+          </div>
+          <div class="flow-step">
+            <div class="num">3</div>
+            <strong>Pydantic valida</strong>
+            <span>Se controlan tipos, rangos y restricciones como <code>area_m2 &gt; 0</code> y longitud mínima.</span>
+          </div>
+          <div class="flow-step">
+            <div class="num">4</div>
+            <strong>Limpieza y análisis</strong>
+            <span>Si corresponde, se ejecuta <code>DataCleaner</code>. Luego <code>analizar_inmuebles</code> calcula métricas.</span>
+          </div>
+          <div class="flow-step">
+            <div class="num">5</div>
+            <strong>Respuesta JSON</strong>
+            <span>El resultado se guarda en <code>historial</code> y se responde al cliente con un JSON estructurado.</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="arquitectura" class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Estructura del proyecto y orden de presentación</h3>
+            <p>
+              Para explicarle el proyecto al profesor, conviene seguir el mismo orden lógico con el que se procesa
+              un request: primero las dependencias, luego la carpeta <code>api/</code>, después <code>analysis/</code>,
+              luego <code>limpieza/</code>, después los datos del dominio y, al final, los módulos complementarios.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-3">
+          <div class="card">
+            <h4>1. requirements.txt</h4>
+            <p>Este archivo se muestra rápido para señalar las dependencias principales del proyecto.</p>
+            <ul>
+              <li><b>FastAPI</b> → framework para construir la API</li>
+              <li><b>Uvicorn</b> → servidor ASGI para ejecutar la aplicación</li>
+              <li><b>Pydantic</b> → validación de datos</li>
+              <li><b>NumPy</b> → cálculos estadísticos</li>
+              <li><b>Pandas</b> → manipulación de datos tabulares</li>
+            </ul>
+            <p class="mini">
+              Qué decir: “Aquí están las dependencias principales del proyecto. FastAPI para la API, Pydantic para validación,
+              NumPy para estadísticas, Pandas para manipulación de datos y Uvicorn para ejecutar el servidor.”
+            </p>
+            <p class="mini">
+              Posible pregunta: “¿Por qué usaste NumPy y no solo Python?” Respuesta: porque facilita cálculos estadísticos
+              vectorizados y más claros.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>2. api/ → analysis_schemas.py</h4>
+            <p>La carpeta <code>api/</code> se muestra primero porque ahí se ve qué entra a la API, cómo se valida y cuál es el endpoint principal.</p>
+            <ul>
+              <li><code>InmuebleInput</code> → representa cada inmueble individual</li>
+              <li><code>AnalisisInmobiliarioInput</code> → cuerpo principal del endpoint <code>/analizar</code></li>
+              <li><code>AnalisisInmobiliarioResult</code> → salida con métricas calculadas</li>
+              <li><code>AnalisisGuardado</code> → estructura persistida en historial</li>
+            </ul>
+            <p class="mini">
+              Qué destacar: uso de <code>Field</code>, <code>Optional</code>, tipos distintos y validaciones como
+              <code>min_length</code>, <code>gt</code>, <code>ge</code> y <code>le</code>.
+            </p>
+            <p class="mini">
+              Posible pregunta: “¿Por qué <code>area_m2 &gt; 0</code>?” Porque evita áreas imposibles y protege el cálculo de <code>precio_m2</code>.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>3. api/ → main.py</h4>
+            <p>Después se muestra la implementación de la API y el flujo de endpoints.</p>
+            <ul>
+              <li>Imports principales</li>
+              <li><code>app = FastAPI(...)</code></li>
+              <li><code>historial</code> y <code>contador_id</code></li>
+              <li><code>/limpiar</code></li>
+              <li><code>/analizar</code></li>
+              <li><code>/historial</code></li>
+              <li><code>/historial/{id}</code></li>
+              <li><code>DELETE /historial/{id}</code></li>
+            </ul>
+            <p class="mini">
+              Qué decir sobre <code>/analizar</code>: “Este es el endpoint principal. Recibe un <code>AnalisisInmobiliarioInput</code>,
+              valida los inmuebles con Pydantic, opcionalmente aplica limpieza, luego llama la función <code>analizar_inmuebles</code>,
+              construye la salida con <code>AnalisisInmobiliarioResult</code> y guarda el resultado en memoria.”
+            </p>
+            <p class="mini">
+              Qué remarcar: uso de <code>HTTPException(404)</code>, separación entre validación, lógica y persistencia temporal,
+              y almacenamiento en memoria con diccionario.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>4. analysis/ → stats.py</h4>
+            <p>Aquí el foco deja de ser la API y pasa a la lógica estadística del proyecto.</p>
+            <ul>
+              <li>Función <code>_r4</code> para redondeo a 4 decimales</li>
+              <li>Función principal <code>analizar_inmuebles</code></li>
+              <li>Uso de <code>numpy</code></li>
+              <li><code>mean</code>, <code>median</code>, <code>min</code>, <code>max</code>, <code>std</code></li>
+              <li><code>ddof=1</code></li>
+              <li>Cálculo de <code>precio_m2</code></li>
+            </ul>
+            <p class="mini">
+              Qué decir: “Aquí separé la lógica de procesamiento del framework. Esta función no depende de FastAPI.
+              Recibe una lista de inmuebles ya validados, convierte los datos a arreglos NumPy y calcula métricas sobre precio, área y precio por metro cuadrado.”
+            </p>
+            <p class="mini">
+              Posible pregunta: “¿Por qué <code>ddof=1</code>?” Porque estoy usando desviación estándar muestral, no poblacional.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>5. limpieza/</h4>
+            <p>Esta carpeta se muestra después de <code>analysis/</code>, como módulo adicional que mejora la calidad de los datos antes del análisis.</p>
+            <ul>
+              <li><b>schemas.py</b> → esquema de configuración del proceso y esquema del reporte</li>
+              <li><b>pipeline.py</b> → estandarización de columnas, vacíos a NaN, duplicados, limpieza monetaria, conversión numérica segura e imputación de nulos</li>
+              <li><b>cleaner.py</b> → clase <code>DataCleaner</code> para reutilizar el pipeline desde la API</li>
+              <li><b>__init__.py</b> → expone la API pública del paquete</li>
+            </ul>
+            <p class="mini">
+              Qué decir: “El módulo de limpieza no era estrictamente el mínimo del CRUD, pero lo integré para mejorar la calidad de los datos antes del análisis.”
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>6. Datos y módulos complementarios</h4>
+            <ul>
+              <li><code>inmuebles_bogota.csv</code> → dataset base del dominio</li>
+              <li><code>data_limpia.csv</code> → dataset resultante del preprocesamiento</li>
+              <li><code>eda/</code> → análisis exploratorio previo para entender variables y contexto</li>
+              <li><code>scripts/</code> → apoyo al flujo general del proyecto</li>
+            </ul>
+            <p class="mini">
+              Qué decir sobre los datos: “Estos archivos representan el origen del dominio. <code>inmuebles_bogota.csv</code>
+              es el dataset base y <code>data_limpia.csv</code> refleja el resultado del preprocesamiento.”
+            </p>
+            <p class="mini">
+              <code>eda/</code> y <code>scripts/</code> se muestran solo al final, porque no son el centro del laboratorio de FastAPI.
+            </p>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="box">
+            <div class="n">Orden</div>
+            <div class="t">requirements → api → analysis → limpieza → datos → eda/scripts</div>
+          </div>
+          <div class="box">
+            <div class="n">API primero</div>
+            <div class="t">porque el profesor quiere ver qué entra, cómo se valida y cuál es el endpoint principal</div>
+          </div>
+          <div class="box">
+            <div class="n">NumPy</div>
+            <div class="t">permite cálculos vectorizados, claros y adecuados para el análisis estadístico</div>
+          </div>
+          <div class="box">
+            <div class="n">Escalabilidad</div>
+            <div class="t">hoy usa diccionario en memoria; a futuro podría migrar a PostgreSQL o MongoDB</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="validacion" class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Validación con Pydantic</h3>
+            <p>
+              Antes de procesar datos, la API valida cada inmueble. Esto evita que lleguen entradas inválidas
+              a la lógica estadística y protege cálculos como <code>precio_m2</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h4>Ejemplos de validación</h4>
+            <ul>
+              <li><code>area_m2</code> debe ser mayor que 0.</li>
+              <li><code>valor</code> debe ser numérico y mayor que 0.</li>
+              <li><code>habitaciones</code> y <code>banos</code> tienen límites.</li>
+              <li><code>tipo</code> exige longitud mínima.</li>
+              <li>La lista de inmuebles debe tener al menos 2 registros.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Impacto técnico</h4>
+            <p>
+              Si se enviaran datos como área negativa, textos en campos numéricos o una lista insuficiente de inmuebles,
+              FastAPI devolvería un <strong>422</strong> antes de ejecutar NumPy. Esto mantiene la integridad del análisis.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="endpoints" class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Endpoints principales</h3>
+            <p>
+              Aquí se resume cómo se usa la API. Cada tarjeta tiene pestañas para ver el request,
+              la explicación y la evidencia visual.
+            </p>
+          </div>
+        </div>
+
+        <div class="endpoint-list">
+          <div class="endpoint-card" data-tabs>
+            <div class="endpoint-header">
+              <div>
+                <span class="method post">POST</span>
+                <span class="endpoint-path">/analizar</span>
+              </div>
+              <span class="mini">Request exitoso</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="req1">JSON</button>
+                <button class="tab-btn" data-tab="exp1">Explicación</button>
+                <button class="tab-btn" data-tab="img1">Swagger</button>
+              </div>
+
+              <div class="tab-panel active" id="req1">
+<pre>{
+  "nombre_analisis": "analisis valido",
+  "inmuebles": [
+    {
+      "tipo": "apartamento",
+      "area_m2": 60,
+      "valor": 240000000,
+      "habitaciones": 2,
+      "banos": 1,
+      "barrio": "Chapinero"
+    },
+    {
+      "tipo": "casa",
+      "area_m2": 120,
+      "valor": 480000000,
+      "habitaciones": 4,
+      "banos": 3,
+      "barrio": "Cedritos"
+    }
+  ],
+  "moneda": "COP",
+  "usar_limpieza": true
+}</pre>
+              </div>
+
+              <div class="tab-panel" id="exp1">
+                <div class="info">
+                  Este request pasa correctamente por Pydantic, luego la API ejecuta el análisis estadístico con NumPy,
+                  calcula métricas como promedio, mediana, mínimo, máximo y desviación estándar, y finalmente guarda el
+                  resultado en memoria dentro de <code>historial</code>.
+                </div>
+              </div>
+
+              <div class="tab-panel" id="img1">
+                <div class="img-wrap">
+                  <img src="imagenes/post_exitoso.png" alt="POST exitoso en Swagger">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="endpoint-card" data-tabs>
+            <div class="endpoint-header">
+              <div>
+                <span class="method post">POST</span>
+                <span class="endpoint-path">/analizar</span>
+              </div>
+              <span class="mini">Error 422</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="req2">JSON</button>
+                <button class="tab-btn" data-tab="exp2">Explicación</button>
+                <button class="tab-btn" data-tab="img2">Swagger</button>
+              </div>
+
+              <div class="tab-panel active" id="req2">
+<pre>{
+  "nombre_analisis": "error_area_negativa",
+  "inmuebles": [
+    {
+      "tipo": "apartamento",
+      "area_m2": -50,
+      "valor": 250000000,
+      "habitaciones": 3,
+      "banos": 2,
+      "barrio": "Chapinero"
+    },
+    {
+      "tipo": "casa",
+      "area_m2": 120,
+      "valor": 450000000,
+      "habitaciones": 4,
+      "banos": 3,
+      "barrio": "Cedritos"
+    }
+  ],
+  "moneda": "COP",
+  "usar_limpieza": true
+}</pre>
+              </div>
+
+              <div class="tab-panel" id="exp2">
+                <div class="info">
+                  Esta prueba produce <strong>HTTP 422</strong> porque <code>area_m2</code> tiene el valor
+                  <code>-50</code> y el modelo exige que sea mayor que 0. La validación ocurre antes de ejecutar la lógica,
+                  por lo que la API bloquea la entrada inválida y evita resultados incoherentes.
+                </div>
+              </div>
+
+              <div class="tab-panel" id="img2">
+                <div class="img-wrap">
+                  <img src="imagenes/post_error_422.png" alt="POST error 422 en Swagger">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="endpoint-card" data-tabs>
+            <div class="endpoint-header">
+              <div>
+                <span class="method get">GET</span>
+                <span class="endpoint-path">/historial</span>
+              </div>
+              <span class="mini">Consulta de análisis</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="req3">Uso</button>
+                <button class="tab-btn" data-tab="exp3">Explicación</button>
+                <button class="tab-btn" data-tab="img3">Swagger</button>
+              </div>
+
+              <div class="tab-panel active" id="req3">
+<pre>GET /historial</pre>
+              </div>
+
+              <div class="tab-panel" id="exp3">
+                <div class="info">
+                  Este endpoint no recibe body JSON. Su función es retornar todos los análisis guardados en memoria.
+                  Si previamente se ejecutó <code>POST /analizar</code>, aquí deben aparecer los resultados almacenados.
+                </div>
+              </div>
+
+              <div class="tab-panel" id="img3">
+                <div class="img-wrap">
+                  <img src="imagenes/get_historial.png" alt="GET historial en Swagger">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="endpoint-card" data-tabs>
+            <div class="endpoint-header">
+              <div>
+                <span class="method get">GET</span>
+                <span class="endpoint-path">/historial/99</span>
+              </div>
+              <span class="mini">Error 404</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="req4">Uso</button>
+                <button class="tab-btn" data-tab="exp4">Explicación</button>
+                <button class="tab-btn" data-tab="img4">Swagger</button>
+              </div>
+
+              <div class="tab-panel active" id="req4">
+<pre>GET /historial/99</pre>
+              </div>
+
+              <div class="tab-panel" id="exp4">
+                <div class="info">
+                  Esta prueba consulta un ID inexistente. La API busca el análisis en <code>historial</code> y,
+                  como no lo encuentra, lanza <code>HTTPException(status_code=404)</code>. Esto demuestra
+                  manejo explícito de errores para recursos inexistentes.
+                </div>
+              </div>
+
+              <div class="tab-panel" id="img4">
+                <div class="img-wrap">
+                  <img src="imagenes/get_historial_404.png" alt="GET historial 404 en Swagger">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="endpoint-card" data-tabs>
+            <div class="endpoint-header">
+              <div>
+                <span class="method delete">DELETE</span>
+                <span class="endpoint-path">/historial/{id}</span>
+              </div>
+              <span class="mini">Eliminación</span>
+            </div>
+            <div class="endpoint-body">
+              <div class="tabs">
+                <button class="tab-btn active" data-tab="req5">Uso</button>
+                <button class="tab-btn" data-tab="exp5">Explicación</button>
+                <button class="tab-btn" data-tab="img5">Swagger</button>
+              </div>
+
+              <div class="tab-panel active" id="req5">
+<pre>DELETE /historial/1</pre>
+              </div>
+
+              <div class="tab-panel" id="exp5">
+                <div class="info">
+                  Este endpoint elimina un análisis previamente guardado. Si el ID existe, la API responde correctamente
+                  y elimina el registro en memoria. Si el ID no existe, también puede devolver <strong>404</strong>.
+                </div>
+              </div>
+
+              <div class="tab-panel" id="img5">
+                <div class="img-wrap">
+                  <img src="imagenes/delete_historial.png" alt="DELETE historial en Swagger">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="pruebas" class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Qué demuestra cada prueba</h3>
+            <p>
+              Esta parte resume el valor académico de la evidencia mostrada en Swagger.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h4>POST exitoso</h4>
+            <p>Prueba que la API recibe datos válidos, ejecuta la lógica con NumPy y genera una respuesta estructurada.</p>
+          </div>
+          <div class="card">
+            <h4>POST con 422</h4>
+            <p>Prueba que Pydantic protege el sistema y evita que la lógica procese entradas inválidas.</p>
+          </div>
+          <div class="card">
+            <h4>GET /historial</h4>
+            <p>Prueba que existe persistencia temporal y que el CRUD puede consultar recursos almacenados.</p>
+          </div>
+          <div class="card">
+            <h4>GET /historial/99</h4>
+            <p>Prueba el manejo correcto de errores cuando se intenta acceder a un recurso inexistente.</p>
+          </div>
+          <div class="card">
+            <h4>DELETE /historial/{id}</h4>
+            <p>Prueba que la API elimina correctamente un análisis guardado y actualiza el historial.</p>
+          </div>
+          <div class="card">
+            <h4>Módulo de limpieza</h4>
+            <p>Muestra que el proyecto no se limita al CRUD: también incorpora una etapa de calidad de datos previa al análisis.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="cierre" class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Cierre del proyecto</h3>
+            <p>
+              Esta API demuestra integración entre validación, lógica estadística y exposición de servicios REST.
+              La arquitectura modular facilita mantenimiento, pruebas y explicación académica.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h4>Fortalezas</h4>
+            <ul>
+              <li>Dominio propio: análisis de inmuebles.</li>
+              <li>Validaciones con Pydantic y manejo de errores.</li>
+              <li>Lógica separada de FastAPI.</li>
+              <li>Uso de NumPy con métricas del dominio.</li>
+              <li>CRUD funcional en memoria.</li>
+              <li>Módulo extra de limpieza de datos.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Posible mejora futura</h4>
+            <p>
+              La siguiente evolución natural sería reemplazar el diccionario en memoria por una base de datos
+              como PostgreSQL o MongoDB para mejorar persistencia y escalabilidad.
+            </p>
+          </div>
+        </div>
+
+        <p class="footer-note">
+          Consejo para exponer: primero muestra la idea general, luego el flujo del request, después esta estructura del proyecto,
+          luego abre Swagger y usa las pruebas para demostrar validación, análisis y CRUD.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll('[data-tabs]').forEach(card => {
+      const buttons = card.querySelectorAll('.tab-btn');
+      const panels = card.querySelectorAll('.tab-panel');
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.tab;
+
+          buttons.forEach(b => b.classList.remove('active'));
+          panels.forEach(p => p.classList.remove('active'));
+
+          btn.classList.add('active');
+          card.querySelector('#' + target).classList.add('active');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
