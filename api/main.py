@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -5,12 +6,32 @@ import io
 import uuid
 
 import pandas as pd
+=======
+from __future__ import annotations  # Permite usar anotaciones de tipos de manera diferida
+
+from typing import Any, Dict  # Tipos genéricos para diccionarios y otros datos
+import io  # Permite leer el archivo subido en memoria
+
+import pandas as pd  # Se usa para convertir listas de diccionarios en DataFrame
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
 from fastapi import (
     FastAPI,
     HTTPException,
     UploadFile,
     File,
     Form,
+<<<<<<< HEAD
+=======
+)  # FastAPI para crear la API, HTTPException para manejar errores HTTP
+from pydantic import BaseModel, Field, ValidationError  # BaseModel para definir esquemas y Field para validaciones/campos
+
+from limpieza import DataCleaner, LimpiezaConfigSchema, LimpiezaReporteSchema  # Elementos del módulo de limpieza
+from api.analysis_schemas import (
+    InmuebleInput,                # Esquema de validación por fila / inmueble
+    AnalisisInmobiliarioInput,    # Esquema de entrada para el análisis inmobiliario
+    AnalisisInmobiliarioResult,   # Esquema del resultado calculado
+    AnalisisGuardado,             # Esquema del objeto que se almacena en historial
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -307,6 +328,7 @@ def limpiar(request: LimpiezaRequest) -> LimpiezaReporteSchema:
     return reporte
 
 
+<<<<<<< HEAD
 # ==========================================================
 # ENDPOINT PRINCIPAL DEL TALLER: ANÁLISIS JSON
 # ==========================================================
@@ -322,25 +344,64 @@ def limpiar(request: LimpiezaRequest) -> LimpiezaReporteSchema:
         "y guarda el resultado en memoria."
     ),
 )
+=======
+# -------------------------
+# Persistencia en memoria (historial) + CRUD
+# -------------------------
+# Diccionario que almacena en memoria los análisis realizados
+# La clave es el id y el valor es un objeto AnalisisGuardado
+historial: Dict[int, AnalisisGuardado] = {}
+
+# Contador global para asignar ids consecutivos a los análisis
+contador_id: int = 0
+
+
+@app.post("/analizar", response_model=AnalisisGuardado)
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
 def analizar(payload: AnalisisInmobiliarioInput) -> AnalisisGuardado:
     inmuebles_dicts = [it.model_dump() for it in payload.inmuebles]
 
+<<<<<<< HEAD
+=======
+    # Limpieza opcional usando tu módulo
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
     if payload.usar_limpieza:
         df = pd.DataFrame(inmuebles_dicts)
+<<<<<<< HEAD
+=======
+
+        # Se crea un limpiador con configuración por defecto
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
         cleaner = DataCleaner(config=LimpiezaConfigSchema())
         df_clean, _ = cleaner.run_with_report(df, preview_rows=3)
         inmuebles_dicts = df_clean.to_dict(orient="records")
 
     resultado = construir_resultado_analisis(inmuebles_dicts)
 
+<<<<<<< HEAD
     item = guardar_analisis_en_historial(
         nombre_analisis=payload.nombre_analisis,
         moneda=payload.moneda or "COP",
         resultado=resultado,
+=======
+    # Convierte el diccionario de resultados en un modelo Pydantic tipado
+    resultado = AnalisisInmobiliarioResult(**res_dict)
+
+    # Incrementa el contador para asignar un nuevo id único
+    contador_id += 1
+
+    # Crea el objeto final que se guardará en historial
+    item = AnalisisGuardado(
+        id=contador_id,                           # Id autoincremental
+        nombre_analisis=payload.nombre_analisis, # Nombre del análisis enviado por el usuario
+        moneda=payload.moneda or "COP",          # Usa la moneda enviada o COP por defecto
+        resultado=resultado,                     # Resultado estadístico calculado
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
     )
     return item
 
 
+<<<<<<< HEAD
 # ==========================================================
 # LIMPIEZA POR CSV
 # ==========================================================
@@ -417,11 +478,105 @@ async def analizar_csv(
     resultado = construir_resultado_analisis(registros_finales)
 
     item = guardar_analisis_en_historial(
+=======
+# -------------------------
+# NUEVO: Analizar archivo CSV
+# -------------------------
+@app.post("/analizar-archivo", response_model=AnalisisGuardado)
+async def analizar_archivo(
+    file: UploadFile = File(...),
+    nombre_analisis: str = Form(...),
+    moneda: str = Form("COP"),
+    usar_limpieza: bool = Form(True),
+) -> AnalisisGuardado:
+    """
+    - Recibe un archivo CSV
+    - Lee el contenido con pandas
+    - Valida cada fila usando Pydantic (InmuebleInput)
+    - (Opcional) aplica limpieza
+    - Ejecuta función pura numpy
+    - Guarda en memoria
+    - Retorna resultado
+    """
+    global contador_id
+
+    # Validar que el archivo exista y tenga nombre
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No se recibió ningún archivo")
+
+    # Validar extensión
+    if not file.filename.lower().endswith(".csv"):
+        raise HTTPException(status_code=400, detail="El archivo debe ser formato CSV")
+
+    # Leer archivo
+    try:
+        contenido = await file.read()
+        df = pd.read_csv(io.BytesIO(contenido))
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No fue posible leer el archivo CSV: {str(e)}",
+        )
+
+    # Validar que no esté vacío
+    if df.empty:
+        raise HTTPException(status_code=400, detail="El archivo está vacío")
+
+    # Validar fila por fila con Pydantic
+    registros_validos: list[dict[str, Any]] = []
+    errores: list[dict[str, Any]] = []
+
+    for i, fila in enumerate(df.to_dict(orient="records"), start=1):
+        try:
+            inmueble = InmuebleInput.model_validate(fila)
+            registros_validos.append(inmueble.model_dump())
+        except ValidationError as e:
+            errores.append(
+                {
+                    "fila": i,
+                    "errores": e.errors(),
+                }
+            )
+
+    # Si hay filas inválidas, devolver error 422
+    if errores:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "mensaje": "El archivo contiene filas inválidas",
+                "errores": errores,
+            },
+        )
+
+    # Se requieren al menos 2 inmuebles válidos para el análisis estadístico
+    if len(registros_validos) < 2:
+        raise HTTPException(
+            status_code=422,
+            detail="Se requieren al menos 2 inmuebles válidos para realizar el análisis",
+        )
+
+    # Limpieza opcional
+    if usar_limpieza:
+        df_validado = pd.DataFrame(registros_validos)
+        cleaner = DataCleaner(config=LimpiezaConfigSchema())
+        df_clean, _ = cleaner.run_with_report(df_validado, preview_rows=3)
+        registros_validos = df_clean.to_dict(orient="records")
+
+    # Ejecutar análisis estadístico
+    res_dict = analizar_inmuebles(registros_validos)
+    resultado = AnalisisInmobiliarioResult(**res_dict)
+
+    # Guardar en historial
+    contador_id += 1
+    item = AnalisisGuardado(
+        id=contador_id,
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
         nombre_analisis=nombre_analisis,
         moneda=moneda,
         resultado=resultado,
     )
 
+<<<<<<< HEAD
     archivo_info = guardar_csv_en_memoria(
         df_procesado,
         generar_nombre_salida(file.filename, "procesado"),
@@ -551,6 +706,13 @@ def descargar_archivo(archivo_id: str):
     summary="Listar historial de análisis",
     description="Retorna todos los análisis guardados en memoria durante la ejecución de la API.",
 )
+=======
+    historial[item.id] = item
+    return item
+
+
+@app.get("/historial", response_model=list[AnalisisGuardado])
+>>>>>>> 5cccff2057b6a673a7f12452129c9d6b1cc678a9
 def listar_historial() -> list[AnalisisGuardado]:
     return list(historial.values())
 
