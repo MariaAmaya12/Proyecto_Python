@@ -1,106 +1,155 @@
-## Proveer una interfaz orientada a objetos para
-# ejecutar la limpieza con config validada.
-# Este archivo define una clase que organiza el proceso de limpieza
-# usando una configuración validada previamente con Pydantic.
+from __future__ import annotations
 
+from typing import Any, Mapping, Optional
 
-from __future__ import annotations  # Permite usar anotaciones de tipos con evaluación diferida
-from typing import Any, Mapping, Optional  # Tipos auxiliares para configuración flexible
-import pandas as pd  # Librería para manipular DataFrames
-
+import pandas as pd
 
 from .pipeline import (
-    convertir_a_numerico_seguro,    # Convierte columnas a tipo numérico cuando sea posible
-    convertir_vacios_a_nan,         # Reemplaza vacíos por valores NaN
-    eliminar_duplicados,            # Elimina filas duplicadas
-    estandarizar_nombres_columnas,  # Normaliza nombres de columnas
-    imputar_nulos,                  # Rellena valores faltantes según estrategia
-    limpiar_columnas_monetarias,    # Limpia columnas con formato monetario
+    convertir_a_numerico_seguro,
+    convertir_vacios_a_nan,
+    eliminar_duplicados,
+    estandarizar_nombres_columnas,
+    imputar_nulos,
+    limpiar_columnas_monetarias,
 )
-from .schemas import LimpiezaConfigSchema, LimpiezaReporteSchema  # Esquemas de configuración y reporte
+from .schemas import (
+    LimpiezaConfigSchema,
+    LimpiezaReporteSchema,
+    LimpiezaDiagnosticoSchema,
+    ColumnaResumenSchema,
+)
 
 
 class DataCleaner:
     """
     Encapsula el pipeline de limpieza en una clase con configuración validada por Pydantic.
     """
-    # Esta clase permite ejecutar el flujo de limpieza de forma organizada,
-    # guardando una configuración validada en el atributo self.config.
 
     def __init__(self, config: Optional[LimpiezaConfigSchema | Mapping[str, Any]] = None) -> None:
-        # Si no se pasa configuración, se crea una configuración por defecto
         if config is None:
             self.config = LimpiezaConfigSchema()
-
-        # Si ya se pasó un objeto del tipo correcto, se usa directamente
         elif isinstance(config, LimpiezaConfigSchema):
             self.config = config
-
-        # Si se pasó un diccionario u otra estructura tipo mapping,
-        # se valida y convierte al esquema Pydantic correspondiente
         else:
             self.config = LimpiezaConfigSchema.model_validate(config)
 
     def run(self, df: pd.DataFrame) -> pd.DataFrame:
-        # Se crea una copia del DataFrame original para no modificar el original directamente
         df_work = df.copy()
 
-        # Estandariza los nombres de las columnas
         estandarizar_nombres_columnas(df_work)
-
-        # Convierte cadenas vacías o equivalentes a NaN
         convertir_vacios_a_nan(df_work)
-
-        # Elimina filas duplicadas
         eliminar_duplicados(df_work)
 
-        # Si en la configuración se definieron columnas monetarias,
-        # se limpian antes de intentar conversiones numéricas
         if self.config.columnas_monetarias:
             limpiar_columnas_monetarias(df_work, self.config.columnas_monetarias)
 
-        # Intenta convertir columnas objetivo a tipo numérico
-        # usando el umbral de conversión definido en la configuración
         convertir_a_numerico_seguro(
             df_work,
             columnas_objetivo=self.config.columnas_numericas_objetivo,
             umbral_conversion=self.config.umbral_conversion,
         )
 
-        # Imputa valores nulos usando las estrategias configuradas
-        # para variables numéricas y categóricas
         imputar_nulos(
             df_work,
             estrategia_num=self.config.estrategia_num,
             estrategia_cat=self.config.estrategia_cat,
         )
 
-        # Retorna el DataFrame ya procesado
         return df_work
+
+    @staticmethod
+    def _pct(parte: int, total: int) -> float:
+        return 0.0 if total == 0 else round((parte / total) * 100, 2)
 
     def run_with_report(
         self, df: pd.DataFrame, preview_rows: int = 5
     ) -> tuple[pd.DataFrame, LimpiezaReporteSchema]:
-        # Guarda la cantidad de filas de entrada antes de la limpieza
-        n_in = len(df)
+        df_in = df.copy()
 
-        # Ejecuta la limpieza principal
-        df_out = self.run(df)
+        # Estado inicial
+        columnas_originales = [str(c) for c in df_in.columns]
+        dtypes_antes = {str(col): str(dtype) for col, dtype in df_in.dtypes.items()}
+        nulos_antes_por_col = df_in.isna().sum().to_dict()
+        nulos_totales_antes = int(df_in.isna().sum().sum())
+        celdas_antes = int(df_in.shape[0] * df_in.shape[1])
+        duplicados_detectados = int(df_in.duplicated().sum())
 
-        # Guarda la cantidad de filas resultantes después de la limpieza
-        n_out = len(df_out)
+        # Limpieza
+        df_out = self.run(df_in)
 
-        # Genera una vista previa de las primeras filas del DataFrame limpio
-        # en formato lista de diccionarios, solo si preview_rows > 0
-        preview = df_out.head(preview_rows).to_dict(orient="records") if preview_rows > 0 else []
+        # Estado final
+        dtypes_despues = {str(col): str(dtype) for col, dtype in df_out.dtypes.items()}
+        nulos_despues_por_col = df_out.isna().sum().to_dict()
+        nulos_totales_despues = int(df_out.isna().sum().sum())
+        celdas_despues = int(df_out.shape[0] * df_out.shape[1])
+        duplicados_restantes = int(df_out.duplicated().sum())
 
-        # Construye el reporte de limpieza con información resumida
-        reporte = LimpiezaReporteSchema(
-            n_filas_entrada=n_in,         # Número de filas antes de limpiar
-            n_filas_salida=n_out,         # Número de filas después de limpiar
-            columnas=list(df_out.columns),# Lista final de columnas del DataFrame limpio
-            preview=preview,              # Muestra de las primeras filas limpias
+        columnas_resultantes = list(df_out.columns)
+
+        # Renombres detectados: posición a posición sobre intersección de longitudes
+        columnas_renombradas: list[str] = []
+        n_cols_comunes = min(len(columnas_originales), len(columnas_resultantes))
+        for i in range(n_cols_comunes):
+            if columnas_originales[i] != columnas_resultantes[i]:
+                columnas_renombradas.append(
+                    f"{columnas_originales[i]} -> {columnas_resultantes[i]}"
+                )
+
+        # Columnas convertidas a numérico
+        columnas_convertidas_a_numerico: list[str] = []
+        for col in df_out.columns:
+            col_str = str(col)
+            if col_str in dtypes_antes and col_str in dtypes_despues:
+                if dtypes_antes[col_str] != dtypes_despues[col_str]:
+                    if "int" in dtypes_despues[col_str] or "float" in dtypes_despues[col_str]:
+                        columnas_convertidas_a_numerico.append(col_str)
+
+        # Detalle por columna
+        detalle_columnas: list[ColumnaResumenSchema] = []
+        for col in df_out.columns:
+            col_str = str(col)
+            nulos_antes = int(nulos_antes_por_col.get(col_str, 0))
+            nulos_despues = int(nulos_despues_por_col.get(col_str, 0))
+
+            detalle_columnas.append(
+                ColumnaResumenSchema(
+                    columna=col_str,
+                    dtype_antes=dtypes_antes.get(col_str, "no_disponible"),
+                    dtype_despues=dtypes_despues.get(col_str, "no_disponible"),
+                    nulos_antes=nulos_antes,
+                    nulos_despues=nulos_despues,
+                    pct_nulos_antes=self._pct(nulos_antes, len(df_in)),
+                    pct_nulos_despues=self._pct(nulos_despues, len(df_out)),
+                )
+            )
+
+        diagnostico = LimpiezaDiagnosticoSchema(
+            n_filas_entrada=len(df_in),
+            n_filas_salida=len(df_out),
+            n_columnas_entrada=df_in.shape[1],
+            n_columnas_salida=df_out.shape[1],
+            nulos_totales_antes=nulos_totales_antes,
+            nulos_totales_despues=nulos_totales_despues,
+            pct_nulos_antes=self._pct(nulos_totales_antes, celdas_antes),
+            pct_nulos_despues=self._pct(nulos_totales_despues, celdas_despues),
+            duplicados_exactos_detectados=duplicados_detectados,
+            duplicados_exactos_restantes=duplicados_restantes,
+            columnas_originales=columnas_originales,
+            columnas_resultantes=columnas_resultantes,
+            columnas_renombradas=columnas_renombradas,
+            columnas_monetarias_limpiadas=self.config.columnas_monetarias or [],
+            columnas_convertidas_a_numerico=columnas_convertidas_a_numerico,
+            detalle_columnas=detalle_columnas,
         )
 
-        # Retorna tanto el DataFrame limpio como el reporte estructurado
+        preview = df_out.head(preview_rows).to_dict(orient="records") if preview_rows > 0 else []
+
+        reporte = LimpiezaReporteSchema(
+            n_filas_entrada=len(df_in),
+            n_filas_salida=len(df_out),
+            columnas=columnas_resultantes,
+            diagnostico=diagnostico,
+            preview=preview,
+        )
+
         return df_out, reporte

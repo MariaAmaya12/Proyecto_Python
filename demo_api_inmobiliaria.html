@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo API Inmobiliaria</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --bg-accent: #eef3ff;
+      --card: rgba(255, 255, 255, 0.92);
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --border: rgba(148, 163, 184, 0.25);
+      --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 30%),
+        radial-gradient(circle at top right, rgba(16, 185, 129, 0.10), transparent 25%),
+        linear-gradient(180deg, var(--bg-accent), var(--bg));
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1280px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 860px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      font-weight: 600;
+      min-width: 220px;
+      justify-content: center;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.15);
+    }
+
+    .dot.online {
+      background: var(--success);
+      box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.15);
+    }
+
+    .dot.offline {
+      background: var(--danger);
+      box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.15);
+    }
+
+    .toolbar,
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.4fr auto;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .grid-2-even {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    input,
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="number"],
+    input[type="file"],
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea {
+      min-height: 360px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: rgba(59, 130, 246, 0.7);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .btn-success {
+      color: white;
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 10px 24px rgba(5, 150, 105, 0.18);
+    }
+
+    .btn-danger {
+      color: white;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 10px 24px rgba(220, 38, 38, 0.18);
+    }
+
+    .message {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      display: none;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.12);
+      color: #065f46;
+      border: 1px solid rgba(16, 185, 129, 0.18);
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.10);
+      color: #991b1b;
+      border: 1px solid rgba(239, 68, 68, 0.18);
+    }
+
+    .summary-box,
+    .empty-state {
+      color: var(--muted);
+      padding: 18px;
+      background: rgba(255,255,255,0.72);
+      border: 1px dashed rgba(148, 163, 184, 0.3);
+      border-radius: 18px;
+      line-height: 1.7;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary-dark);
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 1.12rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      word-break: break-word;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .metric-box {
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .metric-box h4 {
+      margin: 0 0 10px;
+      font-size: 0.96rem;
+    }
+
+    .metric-box div {
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    .download-box {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px dashed rgba(59, 130, 246, 0.35);
+      background: rgba(59, 130, 246, 0.05);
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .download-box.visible { display: flex; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.96);
+      margin-top: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+      vertical-align: top;
+      font-size: 0.92rem;
+    }
+
+    th {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #475569;
+      background: rgba(248, 250, 252, 0.95);
+    }
+
+    tbody tr:hover { background: rgba(59, 130, 246, 0.04); }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .checklist {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .code-box {
+      margin-top: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(248, 250, 252, 0.9);
+      padding: 14px;
+    }
+
+    .code-box h4 {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.86rem;
+      line-height: 1.5;
+      color: #334155;
+    }
+
+    .section-title {
+      margin: 28px 0 16px;
+      color: #1f2937;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    @media (max-width: 1180px) {
+      .grid-2,
+      .grid-2-even,
+      .history-grid,
+      .toolbar,
+      .form-row,
+      .stats-grid,
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        width: min(100% - 20px, 1280px);
+        padding-top: 20px;
+      }
+
+      .card,
+      .toolbar { padding: 18px; }
+
+      .hero h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <div>
+        <h1>Demo Web — API Inmobiliaria</h1>
+        <p>
+          Interfaz centrada en el flujo del taller: envío de datos en JSON, validación con Pydantic,
+          análisis estadístico descriptivo, respuesta JSON y operaciones CRUD sobre el historial.
+          Adicionalmente, la página conserva una funcionalidad extendida para procesar CSV como valor agregado del proyecto.
+        </p>
+      </div>
+      <div class="status-chip">
+        <span id="api-dot" class="dot"></span>
+        <span id="api-status">Verificando conexión con la API...</span>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <div class="form-group" style="margin-bottom:0;">
+        <label for="apiBaseUrl">URL base de la API</label>
+        <input id="apiBaseUrl" type="url" value="http://127.0.0.1:8000" placeholder="http://127.0.0.1:8000" />
+      </div>
+      <div class="actions" style="align-items:end; justify-content:flex-end;">
+        <button id="checkApiBtn" class="btn btn-secondary">Probar conexión</button>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <article class="card">
+        <h2>1. Prueba del taller con JSON</h2>
+        <p>
+          Esta sección consume directamente el endpoint <span class="pill">POST /analizar</span>.
+          Puedes ejecutar el caso exitoso del taller o cargar un ejemplo inválido para provocar un <strong>422</strong>.
+        </p>
+
+        <div class="footer-note" style="margin-top:0; margin-bottom:16px;">
+          <span class="pill">Prueba 1: POST exitoso</span>
+          <span class="pill">Prueba 2: POST inválido 422</span>
+        </div>
+
+        <div class="form-group">
+          <label for="jsonPayload">JSON del análisis</label>
+          <textarea id="jsonPayload"></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="jsonAnalyzeBtn" class="btn btn-primary">Enviar JSON a /analizar</button>
+          <button id="loadJsonExampleBtn" class="btn btn-secondary">Cargar ejemplo válido</button>
+          <button id="loadInvalidJsonBtn" class="btn btn-danger">Cargar ejemplo inválido</button>
+        </div>
+
+        <div id="jsonMessage" class="message"></div>
+      </article>
+
+      <article class="card">
+        <h2>2. Resumen de validación y calidad del JSON</h2>
+        <p>
+          Esta sección resume la calidad del dataset recibido en formato JSON antes y después de la validación lógica del flujo.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Registros recibidos</div>
+            <div id="jsonRowsReceived" class="stat-value">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Registros válidos</div>
+            <div id="jsonRowsValid" class="stat-value">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Registros inválidos</div>
+            <div id="jsonRowsInvalid" class="stat-value">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Limpieza aplicada</div>
+            <div id="jsonCleaningApplied" class="stat-value">—</div>
+          </div>
+        </div>
+
+        <div class="summary-box" id="jsonQualitySummary" style="margin-top:16px;">
+          Aquí aparecerá el diagnóstico del JSON enviado al endpoint principal del taller.
+        </div>
+
+        <div class="code-box">
+          <h4>Estado HTTP de la prueba actual</h4>
+          <pre id="jsonHttpStatus">Aún no se ha ejecutado ninguna prueba JSON.</pre>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid-2-even">
+      <article class="card">
+        <h2>3. Resumen del análisis estadístico</h2>
+        <p>Estadísticas calculadas sobre el dataset finalmente analizado.</p>
+
+        <div id="analysisSummary" class="summary-box">Aún no se ha ejecutado ningún análisis.</div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Registros analizados</div><div id="statN" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Filas inválidas descartadas</div><div id="statInvalidRows" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Precio promedio</div><div id="statAvgPrice" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Análisis ID</div><div id="statAnalysisId" class="stat-value">—</div></div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <h4>Precio</h4>
+            <div><strong>Media:</strong> <span id="priceMean">—</span></div>
+            <div><strong>Mediana:</strong> <span id="priceMedian">—</span></div>
+            <div><strong>Mínimo:</strong> <span id="priceMin">—</span></div>
+            <div><strong>Máximo:</strong> <span id="priceMax">—</span></div>
+            <div><strong>Desv. estándar:</strong> <span id="priceStd">—</span></div>
+            <div><strong>Varianza:</strong> <span id="priceVar">—</span></div>
+          </div>
+
+          <div class="metric-box">
+            <h4>Área</h4>
+            <div><strong>Media:</strong> <span id="areaMean">—</span></div>
+            <div><strong>Mediana:</strong> <span id="areaMedian">—</span></div>
+            <div><strong>Mínimo:</strong> <span id="areaMin">—</span></div>
+            <div><strong>Máximo:</strong> <span id="areaMax">—</span></div>
+            <div><strong>Desv. estándar:</strong> <span id="areaStd">—</span></div>
+            <div><strong>Varianza:</strong> <span id="areaVar">—</span></div>
+          </div>
+
+          <div class="metric-box">
+            <h4>Precio por m²</h4>
+            <div><strong>Media:</strong> <span id="pm2Mean">—</span></div>
+            <div><strong>Mediana:</strong> <span id="pm2Median">—</span></div>
+            <div><strong>Mínimo:</strong> <span id="pm2Min">—</span></div>
+            <div><strong>Máximo:</strong> <span id="pm2Max">—</span></div>
+            <div><strong>Desv. estándar:</strong> <span id="pm2Std">—</span></div>
+            <div><strong>Varianza:</strong> <span id="pm2Var">—</span></div>
+          </div>
+        </div>
+
+        <div id="validationPreview" class="summary-box" style="margin-top:16px;">
+          Aquí aparecerá el resumen de validación de dominio o descarte de registros.
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>4. Evidencia técnica de la prueba actual</h2>
+        <p>
+          Este bloque deja visible el request, el response y el código HTTP de la operación principal, para facilitar la evidencia del taller.
+        </p>
+
+        <div class="code-box">
+          <h4>Request enviado</h4>
+          <pre id="requestPayloadBox">Aún no se ha enviado ninguna solicitud.</pre>
+        </div>
+
+        <div class="code-box">
+          <h4>Response recibido</h4>
+          <pre id="responsePayloadBox">Aún no se ha recibido ninguna respuesta.</pre>
+        </div>
+
+        <div class="footer-note">
+          Aquí quedan visibles de forma explícita el contenido del request, la respuesta JSON y el estado HTTP de la prueba actual.
+        </div>
+      </article>
+    </section>
+
+    <section class="history-grid">
+      <article class="card">
+        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:10px;">
+          <div>
+            <h2>5. Historial de análisis</h2>
+            <p>Listado general de análisis almacenados por la API.</p>
+          </div>
+          <button id="historyBtn" class="btn btn-secondary">Actualizar historial</button>
+        </div>
+
+        <div class="footer-note" style="margin-top:0; margin-bottom:10px;">
+          <span class="pill">Prueba 3: GET /historial</span>
+        </div>
+
+        <div id="historyContainer" class="empty-state">No se ha consultado el historial todavía.</div>
+      </article>
+
+      <article class="card">
+        <h2>6. Operaciones sobre historial</h2>
+        <p>
+          Consulta un análisis específico por ID o elimina un registro puntual del historial.
+          Para demostrar el <strong>404</strong>, usa un ID inexistente como <strong>999</strong>.
+        </p>
+
+        <div class="footer-note" style="margin-top:0; margin-bottom:10px;">
+          <span class="pill">Prueba 4: GET /historial/{id} con 404</span>
+          <span class="pill">Prueba 5: DELETE /historial/{id}</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="historyIdInput">ID del análisis</label>
+            <input id="historyIdInput" type="number" min="1" placeholder="Ej: 1 o 999" />
+          </div>
+          <div class="form-group" style="justify-content:end; display:flex; flex-direction:column;">
+            <label style="visibility:hidden;">Acciones</label>
+            <div class="actions" style="margin-top:0;">
+              <button id="findHistoryBtn" class="btn btn-secondary">Consultar por ID</button>
+              <button id="deleteHistoryBtn" class="btn btn-danger">Eliminar</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="historyDetail" class="summary-box">Aquí aparecerá el detalle del análisis consultado por ID.</div>
+        <div id="historyMessage" class="message"></div>
+
+        <div class="code-box">
+          <h4>Última operación CRUD</h4>
+          <pre id="crudEvidenceBox">Aún no se ha ejecutado ninguna operación CRUD puntual.</pre>
+        </div>
+      </article>
+    </section>
+
+    <div class="section-title">Funcionalidad adicional del proyecto</div>
+
+    <section class="grid-2">
+      <article class="card">
+        <h2>7. Flujo extendido con CSV</h2>
+        <p>
+          Este módulo no es el núcleo del taller, pero se conserva como funcionalidad adicional del proyecto.
+          Usa el endpoint <span class="pill">POST /pipeline/csv</span>.
+        </p>
+
+        <div class="form-group">
+          <label for="pipelineFile">Archivo CSV</label>
+          <input id="pipelineFile" type="file" accept=".csv,text/csv" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="analysisName">Nombre del análisis</label>
+            <input id="analysisName" type="text" placeholder="Ej: Análisis Bogotá Marzo" />
+          </div>
+          <div class="form-group">
+            <label for="currency">Moneda</label>
+            <input id="currency" type="text" value="COP" placeholder="COP" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="pipelineBtn" class="btn btn-primary">Ejecutar limpieza + análisis</button>
+        </div>
+
+        <div id="pipelineMessage" class="message"></div>
+      </article>
+
+      <article class="card">
+        <h2>8. Resumen de limpieza del flujo CSV</h2>
+        <p>
+          Aquí se muestra el diagnóstico de calidad solo cuando se use el módulo adicional de archivo.
+        </p>
+
+        <div id="cleaningSummary" class="summary-box">Aún no se ha ejecutado ninguna limpieza sobre CSV.</div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Nulos antes</div><div id="nullsBefore" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Nulos después</div><div id="nullsAfter" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Duplicados detectados</div><div id="duplicatesBefore" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Duplicados restantes</div><div id="duplicatesAfter" class="stat-value">—</div></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">% nulos antes</div><div id="nullPctBefore" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">% nulos después</div><div id="nullPctAfter" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Columnas entrada</div><div id="colsBefore" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Columnas salida</div><div id="colsAfter" class="stat-value">—</div></div>
+        </div>
+
+        <div id="cleaningLists" class="summary-box" style="margin-top:16px;">Aquí aparecerán las transformaciones detectadas en la limpieza del CSV.</div>
+
+        <div id="downloadBox" class="download-box">
+          <div>
+            <strong>Archivo procesado listo para descarga</strong>
+            <div id="downloadMeta" class="footer-note" style="margin-top:6px;">Aún no se ha generado ningún archivo.</div>
+          </div>
+          <a id="downloadLink" class="btn btn-success" href="#" target="_blank" rel="noopener">Descargar CSV</a>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const ENDPOINTS = {
+      health: "/health",
+      rootFallback: "/",
+      analizarJson: "/analizar",
+      pipelineCsv: "/pipeline/csv",
+      history: "/historial",
+      historyById: (id) => `/historial/${id}`,
+    };
+
+    const VALID_JSON_EXAMPLE = {
+      nombre_analisis: "Analisis apartamentos zona norte",
+      moneda: "COP",
+      usar_limpieza: true,
+      inmuebles: [
+        {
+          tipo: "apartamento",
+          area_m2: 78.5,
+          valor: 325000000,
+          habitaciones: 3,
+          banos: 2,
+          barrio: "Chapinero"
+        },
+        {
+          tipo: "apartamento",
+          area_m2: 64.0,
+          valor: 280000000,
+          habitaciones: 2,
+          banos: 2,
+          barrio: "Cedritos"
+        }
+      ]
+    };
+
+    const INVALID_JSON_EXAMPLE = {
+      nombre_analisis: "x",
+      moneda: "CO",
+      usar_limpieza: true,
+      inmuebles: [
+        {
+          tipo: "ap",
+          area_m2: -10,
+          valor: 0,
+          habitaciones: -1,
+          banos: -1,
+          barrio: "a"
+        }
+      ]
+    };
+
+    const apiBaseUrlInput = document.getElementById("apiBaseUrl");
+    const apiDot = document.getElementById("api-dot");
+    const apiStatus = document.getElementById("api-status");
+    const jsonPayload = document.getElementById("jsonPayload");
+
+    const analysisSummary = document.getElementById("analysisSummary");
+    const validationPreview = document.getElementById("validationPreview");
+    const jsonQualitySummary = document.getElementById("jsonQualitySummary");
+    const jsonHttpStatus = document.getElementById("jsonHttpStatus");
+    const requestPayloadBox = document.getElementById("requestPayloadBox");
+    const responsePayloadBox = document.getElementById("responsePayloadBox");
+    const historyContainer = document.getElementById("historyContainer");
+    const historyDetail = document.getElementById("historyDetail");
+    const crudEvidenceBox = document.getElementById("crudEvidenceBox");
+
+    const cleaningSummary = document.getElementById("cleaningSummary");
+    const downloadBox = document.getElementById("downloadBox");
+    const downloadLink = document.getElementById("downloadLink");
+    const downloadMeta = document.getElementById("downloadMeta");
+
+    function getApiBaseUrl() {
+      return apiBaseUrlInput.value.trim().replace(/\/$/, "");
+    }
+
+    function buildUrl(path) {
+      return `${getApiBaseUrl()}${path}`;
+    }
+
+    function setStatus(state, message) {
+      apiDot.classList.remove("online", "offline");
+      if (state === "online") apiDot.classList.add("online");
+      if (state === "offline") apiDot.classList.add("offline");
+      apiStatus.textContent = message;
+    }
+
+    function setMessage(elementId, type, text) {
+      const el = document.getElementById(elementId);
+      el.className = `message ${type}`;
+      el.textContent = text;
+    }
+
+    function clearMessage(elementId) {
+      const el = document.getElementById(elementId);
+      el.className = "message";
+      el.textContent = "";
+    }
+
+    function formatNumber(value) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
+      return new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }).format(Number(value));
+    }
+
+    function formatPercent(value) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
+      return `${formatNumber(value)}%`;
+    }
+
+    function stringifyPretty(obj) {
+      try {
+        return JSON.stringify(obj, null, 2);
+      } catch {
+        return String(obj);
+      }
+    }
+
+    function parseErrorPayload(errorPayload) {
+      if (!errorPayload) return "Error desconocido";
+
+      if (typeof errorPayload === "string") return errorPayload;
+
+      if (Array.isArray(errorPayload)) return stringifyPretty(errorPayload);
+
+      if (errorPayload.detail && typeof errorPayload.detail === "string") {
+        return errorPayload.detail;
+      }
+
+      if (errorPayload.detail && Array.isArray(errorPayload.detail)) {
+        return errorPayload.detail
+          .map(err => {
+            const loc = Array.isArray(err.loc) ? err.loc.join(" → ") : "campo";
+            return `${loc}: ${err.msg}`;
+          })
+          .join("\n");
+      }
+
+      if (errorPayload.detail && typeof errorPayload.detail === "object") {
+        return stringifyPretty(errorPayload.detail);
+      }
+
+      return stringifyPretty(errorPayload);
+    }
+
+    function updateEvidence(statusCode, requestObj, responseObj) {
+      jsonHttpStatus.textContent = statusCode ? `HTTP ${statusCode}` : "Sin estado HTTP.";
+      requestPayloadBox.textContent = stringifyPretty(requestObj);
+      responsePayloadBox.textContent = stringifyPretty(responseObj);
+    }
+
+    function setJsonQualityCards(received, valid, invalid, cleaningApplied) {
+      document.getElementById("jsonRowsReceived").textContent = received ?? "—";
+      document.getElementById("jsonRowsValid").textContent = valid ?? "—";
+      document.getElementById("jsonRowsInvalid").textContent = invalid ?? "—";
+      document.getElementById("jsonCleaningApplied").textContent =
+        cleaningApplied === null || cleaningApplied === undefined
+          ? "—"
+          : (cleaningApplied ? "Sí" : "No");
+    }
+
+    function validateSingleInmueble(item) {
+      const errors = [];
+
+      if (typeof item !== "object" || item === null || Array.isArray(item)) {
+        return ["El registro no es un objeto válido."];
+      }
+
+      if (typeof item.tipo !== "string" || item.tipo.trim().length < 3) {
+        errors.push("tipo debe tener al menos 3 caracteres");
+      }
+
+      if (!(Number(item.area_m2) > 0)) {
+        errors.push("area_m2 debe ser mayor que 0");
+      }
+
+      if (!(Number(item.valor) > 0)) {
+        errors.push("valor debe ser mayor que 0");
+      }
+
+      if (!Number.isInteger(Number(item.habitaciones)) || Number(item.habitaciones) < 0 || Number(item.habitaciones) > 20) {
+        errors.push("habitaciones debe estar entre 0 y 20");
+      }
+
+      if (!Number.isInteger(Number(item.banos)) || Number(item.banos) < 0 || Number(item.banos) > 20) {
+        errors.push("banos debe estar entre 0 y 20");
+      }
+
+      if (item.barrio !== undefined && item.barrio !== null) {
+        if (typeof item.barrio !== "string" || item.barrio.trim().length < 3) {
+          errors.push("barrio debe tener al menos 3 caracteres si se envía");
+        }
+      }
+
+      return errors;
+    }
+
+    function analyzeJsonQuality(data) {
+      const topErrors = [];
+      const rowErrors = [];
+
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        return {
+          received: 0,
+          valid: 0,
+          invalid: 0,
+          cleaningApplied: null,
+          topErrors: ["El JSON raíz debe ser un objeto."],
+          rowErrors: []
+        };
+      }
+
+      if (typeof data.nombre_analisis !== "string" || data.nombre_analisis.trim().length < 3) {
+        topErrors.push("nombre_analisis debe tener al menos 3 caracteres");
+      }
+
+      if (data.moneda !== undefined && data.moneda !== null) {
+        if (typeof data.moneda !== "string" || data.moneda.trim().length < 3) {
+          topErrors.push("moneda debe tener al menos 3 caracteres");
+        }
+      }
+
+      const cleaningApplied = Boolean(data.usar_limpieza);
+
+      if (!Array.isArray(data.inmuebles)) {
+        topErrors.push("inmuebles debe ser una lista");
+        return {
+          received: 0,
+          valid: 0,
+          invalid: 0,
+          cleaningApplied,
+          topErrors,
+          rowErrors
+        };
+      }
+
+      if (data.inmuebles.length < 2) {
+        topErrors.push("inmuebles debe contener al menos 2 registros");
+      }
+
+      let valid = 0;
+      let invalid = 0;
+
+      data.inmuebles.forEach((row, idx) => {
+        const errs = validateSingleInmueble(row);
+        if (errs.length === 0) {
+          valid += 1;
+        } else {
+          invalid += 1;
+          rowErrors.push({
+            fila: idx + 1,
+            errores: errs
+          });
+        }
+      });
+
+      return {
+        received: data.inmuebles.length,
+        valid,
+        invalid,
+        cleaningApplied,
+        topErrors,
+        rowErrors
+      };
+    }
+
+    function renderJsonQualitySummary(quality) {
+      setJsonQualityCards(
+        quality.received,
+        quality.valid,
+        quality.invalid,
+        quality.cleaningApplied
+      );
+
+      const topErrorsHtml = quality.topErrors.length > 0
+        ? quality.topErrors.map(e => `• ${e}`).join("<br>")
+        : "Ningún error estructural detectado.";
+
+      const rowErrorsHtml = quality.rowErrors.length > 0
+        ? quality.rowErrors
+            .map(r => `Fila ${r.fila}: ${r.errores.join("; ")}`)
+            .join("<br>")
+        : "No se detectaron errores por registro en la validación previa de la interfaz.";
+
+      jsonQualitySummary.innerHTML = `
+        <strong>Diagnóstico del JSON de entrada</strong><br><br>
+        <strong>Errores estructurales:</strong><br>${topErrorsHtml}<br><br>
+        <strong>Errores por registro:</strong><br>${rowErrorsHtml}
+      `;
+    }
+
+    async function checkApiConnection() {
+      setStatus("checking", "Verificando conexión con la API...");
+      try {
+        let response = await fetch(buildUrl(ENDPOINTS.health));
+        if (!response.ok) response = await fetch(buildUrl(ENDPOINTS.rootFallback));
+        if (!response.ok) throw new Error("La API respondió con error.");
+        setStatus("online", "API conectada correctamente");
+      } catch {
+        setStatus("offline", "No se pudo conectar con la API");
+      }
+    }
+
+    function renderAnalysisMetrics(analisis, analysisId, invalidas, nombreAnalisis, moneda, flujoLabel) {
+      analysisSummary.innerHTML = `
+        <strong>Análisis estadístico completado</strong><br><br>
+        <strong>Nombre del análisis:</strong> ${nombreAnalisis ?? "—"}<br>
+        <strong>Moneda:</strong> ${moneda ?? "—"}<br>
+        <strong>Registros analizados:</strong> ${formatNumber(analisis?.n)}<br>
+        <strong>Filas inválidas descartadas:</strong> ${formatNumber(invalidas)}<br>
+        <strong>Flujo:</strong> ${flujoLabel}
+      `;
+
+      document.getElementById("statN").textContent = formatNumber(analisis?.n);
+      document.getElementById("statInvalidRows").textContent = formatNumber(invalidas);
+      document.getElementById("statAvgPrice").textContent = formatNumber(analisis?.precio_promedio);
+      document.getElementById("statAnalysisId").textContent = analysisId ?? "—";
+
+      document.getElementById("priceMean").textContent = formatNumber(analisis?.precio_promedio);
+      document.getElementById("priceMedian").textContent = formatNumber(analisis?.precio_mediana);
+      document.getElementById("priceMin").textContent = formatNumber(analisis?.precio_min);
+      document.getElementById("priceMax").textContent = formatNumber(analisis?.precio_max);
+      document.getElementById("priceStd").textContent = formatNumber(analisis?.precio_std);
+      document.getElementById("priceVar").textContent = formatNumber(analisis?.precio_var);
+
+      document.getElementById("areaMean").textContent = formatNumber(analisis?.area_promedio);
+      document.getElementById("areaMedian").textContent = formatNumber(analisis?.area_mediana);
+      document.getElementById("areaMin").textContent = formatNumber(analisis?.area_min);
+      document.getElementById("areaMax").textContent = formatNumber(analisis?.area_max);
+      document.getElementById("areaStd").textContent = formatNumber(analisis?.area_std);
+      document.getElementById("areaVar").textContent = formatNumber(analisis?.area_var);
+
+      document.getElementById("pm2Mean").textContent = formatNumber(analisis?.precio_m2_promedio);
+      document.getElementById("pm2Median").textContent = formatNumber(analisis?.precio_m2_mediana);
+      document.getElementById("pm2Min").textContent = formatNumber(analisis?.precio_m2_min);
+      document.getElementById("pm2Max").textContent = formatNumber(analisis?.precio_m2_max);
+      document.getElementById("pm2Std").textContent = formatNumber(analisis?.precio_m2_std);
+      document.getElementById("pm2Var").textContent = formatNumber(analisis?.precio_m2_var);
+    }
+
+    function renderValidationPreview(html) {
+      validationPreview.innerHTML = html;
+    }
+
+    async function submitJsonAnalysis() {
+      clearMessage("jsonMessage");
+
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonPayload.value);
+      } catch {
+        const localError = "El contenido del textarea no es un JSON válido.";
+        setMessage("jsonMessage", "error", localError);
+        updateEvidence("local", jsonPayload.value, { error: localError });
+        setJsonQualityCards(0, 0, 0, null);
+        jsonQualitySummary.innerHTML = "<strong>Error local</strong><br><br>No fue posible interpretar el contenido como JSON.";
+        return;
+      }
+
+      const localQuality = analyzeJsonQuality(parsed);
+      renderJsonQualitySummary(localQuality);
+
+      const button = document.getElementById("jsonAnalyzeBtn");
+      button.disabled = true;
+      button.textContent = "Enviando JSON...";
+
+      try {
+        const response = await fetch(buildUrl(ENDPOINTS.analizarJson), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(parsed),
+        });
+
+        const payload = await response.json();
+        updateEvidence(response.status, parsed, payload);
+
+        if (!response.ok) {
+          setMessage("jsonMessage", "error", parseErrorPayload(payload));
+
+          renderValidationPreview(`
+            <strong>Validación de dominio</strong><br><br>
+            La API rechazó el request. Esto corresponde a una prueba de validación fallida del taller.
+          `);
+
+          const detailText = parseErrorPayload(payload).replace(/\n/g, "<br>");
+          jsonQualitySummary.innerHTML = `
+            <strong>Diagnóstico del JSON de entrada</strong><br><br>
+            <strong>Resultado:</strong> request rechazado por la API.<br><br>
+            <strong>Detalle del error:</strong><br>${detailText}
+          `;
+          return;
+        }
+
+        renderAnalysisMetrics(
+          payload.resultado,
+          payload.id,
+          0,
+          payload.nombre_analisis,
+          payload.moneda,
+          "POST /analizar"
+        );
+
+        renderValidationPreview(`
+          <strong>Validación de dominio</strong><br><br>
+          El JSON fue validado correctamente con Pydantic y el análisis fue almacenado en memoria.
+        `);
+
+        jsonQualitySummary.innerHTML = `
+          <strong>Diagnóstico del JSON de entrada</strong><br><br>
+          <strong>Registros recibidos:</strong> ${localQuality.received}<br>
+          <strong>Registros válidos detectados en la interfaz:</strong> ${localQuality.valid}<br>
+          <strong>Registros inválidos detectados en la interfaz:</strong> ${localQuality.invalid}<br>
+          <strong>Limpieza solicitada:</strong> ${localQuality.cleaningApplied ? "Sí" : "No"}<br><br>
+          El request fue aceptado por la API y se generó un análisis válido.
+        `;
+
+        setMessage("jsonMessage", "success", `HTTP ${response.status} · JSON procesado correctamente.`);
+        await loadHistory();
+      } catch (error) {
+        setMessage("jsonMessage", "error", error.message || "No fue posible procesar el JSON.");
+        updateEvidence("error", parsed, { error: error.message || "Error de red o procesamiento." });
+      } finally {
+        button.disabled = false;
+        button.textContent = "Enviar JSON a /analizar";
+      }
+    }
+
+    function loadValidJsonExample() {
+      jsonPayload.value = stringifyPretty(VALID_JSON_EXAMPLE);
+      clearMessage("jsonMessage");
+      const quality = analyzeJsonQuality(VALID_JSON_EXAMPLE);
+      renderJsonQualitySummary(quality);
+      updateEvidence(null, "Aún no se ha enviado ninguna solicitud.", "Aún no se ha recibido ninguna respuesta.");
+    }
+
+    function loadInvalidJsonExample() {
+      jsonPayload.value = stringifyPretty(INVALID_JSON_EXAMPLE);
+      clearMessage("jsonMessage");
+      const quality = analyzeJsonQuality(INVALID_JSON_EXAMPLE);
+      renderJsonQualitySummary(quality);
+      jsonHttpStatus.textContent = "Listo para probar un 422.";
+    }
+
+    function createHistoryTable(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        historyContainer.innerHTML = '<div class="empty-state">No hay análisis guardados en el historial.</div>';
+        return;
+      }
+
+      const rows = data.map(item => {
+        const resultado = item.resultado || {};
+        return `
+          <tr>
+            <td>${item.id ?? "—"}</td>
+            <td>${item.nombre_analisis ?? "—"}</td>
+            <td>${item.moneda ?? "—"}</td>
+            <td>${resultado.n ?? "—"}</td>
+            <td>${formatNumber(resultado.precio_promedio)}</td>
+          </tr>
+        `;
+      }).join("");
+
+      historyContainer.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre del análisis</th>
+              <th>Moneda</th>
+              <th>N</th>
+              <th>Precio promedio</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function loadHistory() {
+      try {
+        const response = await fetch(buildUrl(ENDPOINTS.history));
+        const payload = await response.json();
+        if (!response.ok) throw new Error(parseErrorPayload(payload));
+        createHistoryTable(payload);
+      } catch (error) {
+        historyContainer.innerHTML = `<div class="empty-state">No fue posible cargar el historial.<br><br>${error.message}</div>`;
+      }
+    }
+
+    async function findHistoryById() {
+      clearMessage("historyMessage");
+      const id = document.getElementById("historyIdInput").value.trim();
+
+      if (!id) {
+        setMessage("historyMessage", "error", "Debes ingresar un ID de análisis.");
+        return;
+      }
+
+      try {
+        const response = await fetch(buildUrl(ENDPOINTS.historyById(id)));
+        const payload = await response.json();
+
+        crudEvidenceBox.textContent = `HTTP ${response.status}\n\nRequest:\nGET ${buildUrl(ENDPOINTS.historyById(id))}\n\nResponse:\n${stringifyPretty(payload)}`;
+
+        if (!response.ok) throw new Error(parseErrorPayload(payload));
+
+        historyDetail.innerHTML = `
+          <strong>Análisis encontrado</strong><br><br>
+          <strong>ID:</strong> ${payload.id}<br>
+          <strong>Nombre:</strong> ${payload.nombre_analisis}<br>
+          <strong>Moneda:</strong> ${payload.moneda}<br>
+          <strong>Registros analizados:</strong> ${formatNumber(payload.resultado?.n)}<br>
+          <strong>Precio promedio:</strong> ${formatNumber(payload.resultado?.precio_promedio)}<br>
+          <strong>Área promedio:</strong> ${formatNumber(payload.resultado?.area_promedio)}
+        `;
+        setMessage("historyMessage", "success", `HTTP ${response.status} · Consulta realizada correctamente.`);
+      } catch (error) {
+        historyDetail.innerHTML = "Aquí aparecerá el detalle del análisis consultado por ID.";
+        setMessage("historyMessage", "error", error.message || "No fue posible consultar el análisis.");
+      }
+    }
+
+    async function deleteHistoryById() {
+      clearMessage("historyMessage");
+      const id = document.getElementById("historyIdInput").value.trim();
+
+      if (!id) {
+        setMessage("historyMessage", "error", "Debes ingresar un ID de análisis para eliminar.");
+        return;
+      }
+
+      try {
+        const response = await fetch(buildUrl(ENDPOINTS.historyById(id)), {
+          method: "DELETE",
+        });
+
+        const payload = await response.json();
+
+        crudEvidenceBox.textContent = `HTTP ${response.status}\n\nRequest:\nDELETE ${buildUrl(ENDPOINTS.historyById(id))}\n\nResponse:\n${stringifyPretty(payload)}`;
+
+        if (!response.ok) throw new Error(parseErrorPayload(payload));
+
+        historyDetail.innerHTML = `Se eliminó correctamente el análisis con ID ${id}.`;
+        setMessage("historyMessage", "success", `HTTP ${response.status} · Registro ${id} eliminado correctamente.`);
+        await loadHistory();
+      } catch (error) {
+        setMessage("historyMessage", "error", error.message || "No fue posible eliminar el análisis.");
+      }
+    }
+
+    function renderCleaningDiagnostics(limpieza) {
+      const diagnostico = limpieza?.diagnostico || {};
+
+      cleaningSummary.innerHTML = `
+        <strong>Limpieza CSV completada</strong><br><br>
+        <strong>Registros de entrada:</strong> ${formatNumber(limpieza?.n_registros_entrada)}<br>
+        <strong>Registros de salida:</strong> ${formatNumber(limpieza?.n_registros_salida)}<br>
+        <strong>Columnas resultantes:</strong> ${Array.isArray(limpieza?.columnas_resultantes) ? limpieza.columnas_resultantes.join(", ") : "—"}
+      `;
+
+      document.getElementById("nullsBefore").textContent = formatNumber(diagnostico.nulos_totales_antes);
+      document.getElementById("nullsAfter").textContent = formatNumber(diagnostico.nulos_totales_despues);
+      document.getElementById("duplicatesBefore").textContent = formatNumber(diagnostico.duplicados_exactos_detectados);
+      document.getElementById("duplicatesAfter").textContent = formatNumber(diagnostico.duplicados_exactos_restantes);
+      document.getElementById("nullPctBefore").textContent = formatPercent(diagnostico.pct_nulos_antes);
+      document.getElementById("nullPctAfter").textContent = formatPercent(diagnostico.pct_nulos_despues);
+      document.getElementById("colsBefore").textContent = formatNumber(diagnostico.n_columnas_entrada);
+      document.getElementById("colsAfter").textContent = formatNumber(diagnostico.n_columnas_salida);
+
+      const renombradas = Array.isArray(diagnostico.columnas_renombradas) && diagnostico.columnas_renombradas.length > 0
+        ? diagnostico.columnas_renombradas.join(", ")
+        : "Ninguna";
+
+      const monetarias = Array.isArray(diagnostico.columnas_monetarias_limpiadas) && diagnostico.columnas_monetarias_limpiadas.length > 0
+        ? diagnostico.columnas_monetarias_limpiadas.join(", ")
+        : "Ninguna";
+
+      const convertidas = Array.isArray(diagnostico.columnas_convertidas_a_numerico) && diagnostico.columnas_convertidas_a_numerico.length > 0
+        ? diagnostico.columnas_convertidas_a_numerico.join(", ")
+        : "Ninguna";
+
+      document.getElementById("cleaningLists").innerHTML = `
+        <strong>Transformaciones detectadas</strong><br><br>
+        <strong>Columnas renombradas:</strong> ${renombradas}<br>
+        <strong>Columnas monetarias limpiadas:</strong> ${monetarias}<br>
+        <strong>Columnas convertidas a numérico:</strong> ${convertidas}
+      `;
+    }
+
+    async function submitPipeline() {
+      clearMessage("pipelineMessage");
+      const fileInput = document.getElementById("pipelineFile");
+      const file = fileInput.files[0];
+      const nombreAnalisis = document.getElementById("analysisName").value.trim();
+      const moneda = document.getElementById("currency").value.trim() || "COP";
+
+      if (!file) {
+        setMessage("pipelineMessage", "error", "Debes seleccionar un archivo CSV.");
+        return;
+      }
+
+      if (!nombreAnalisis) {
+        setMessage("pipelineMessage", "error", "Debes ingresar un nombre para el análisis.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("nombre_analisis", nombreAnalisis);
+      formData.append("moneda", moneda);
+
+      const button = document.getElementById("pipelineBtn");
+      button.disabled = true;
+      button.textContent = "Procesando...";
+
+      try {
+        const response = await fetch(buildUrl(ENDPOINTS.pipelineCsv), {
+          method: "POST",
+          body: formData,
+        });
+
+        const payload = await response.json();
+        if (!response.ok) throw new Error(parseErrorPayload(payload));
+
+        renderCleaningDiagnostics(payload.limpieza || {});
+        renderAnalysisMetrics(
+          payload.analisis,
+          payload.analisis_id,
+          payload.filas_invalidas_descartadas ?? 0,
+          payload.nombre_analisis,
+          payload.moneda,
+          "POST /pipeline/csv"
+        );
+
+        renderValidationPreview(`
+          <strong>Validación de dominio</strong><br><br>
+          El flujo CSV limpió el archivo, descartó registros inválidos si existían y generó el análisis estadístico final.
+        `);
+
+        if (payload.archivo_generado?.download_url) {
+          const fullDownloadUrl = `${getApiBaseUrl()}${payload.archivo_generado.download_url}`;
+          downloadLink.href = fullDownloadUrl;
+          downloadLink.download = payload.archivo_generado.nombre_archivo || "procesado.csv";
+          downloadMeta.textContent = `${payload.archivo_generado.nombre_archivo || "archivo.csv"} · ${fullDownloadUrl}`;
+          downloadBox.classList.add("visible");
+        } else {
+          downloadBox.classList.remove("visible");
+        }
+
+        setMessage("pipelineMessage", "success", `HTTP ${response.status} · Pipeline CSV ejecutado correctamente.`);
+        await loadHistory();
+      } catch (error) {
+        setMessage("pipelineMessage", "error", error.message || "No fue posible ejecutar el pipeline.");
+      } finally {
+        button.disabled = false;
+        button.textContent = "Ejecutar limpieza + análisis";
+      }
+    }
+
+    document.getElementById("checkApiBtn").addEventListener("click", checkApiConnection);
+    document.getElementById("jsonAnalyzeBtn").addEventListener("click", submitJsonAnalysis);
+    document.getElementById("loadJsonExampleBtn").addEventListener("click", loadValidJsonExample);
+    document.getElementById("loadInvalidJsonBtn").addEventListener("click", loadInvalidJsonExample);
+    document.getElementById("historyBtn").addEventListener("click", loadHistory);
+    document.getElementById("findHistoryBtn").addEventListener("click", findHistoryById);
+    document.getElementById("deleteHistoryBtn").addEventListener("click", deleteHistoryById);
+    document.getElementById("pipelineBtn").addEventListener("click", submitPipeline);
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      loadValidJsonExample();
+      await checkApiConnection();
+      await loadHistory();
+    });
+  </script>
+</body>
+</html>
